@@ -3,5 +3,8 @@ pandas
 scipy
 matplotlib
 seaborn
-sklearn 
+scikit-learn 
 pymc
+joblib
+tqdm
+cvxpy

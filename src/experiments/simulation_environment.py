@@ -83,6 +83,7 @@ def sigmoid(x):
 """### Functions for Environment Models
 ---
 """
+
 def construct_model_and_sample(state, action, \
                                           bern_params, \
                                           y_params, \
@@ -90,15 +91,26 @@ def construct_model_and_sample(state, action, \
                                           effect_func_y=lambda state : 0):
 #   print(bern_params)
   bern_linear_comp = state @ bern_params
-  if (action == 1):
-    bern_linear_comp += effect_func_bern(state)
+  try:
+    # Try action-aware effect function first (new multi-category approach)
+    bern_linear_comp += effect_func_bern(state, action)
+  except TypeError:
+    # Backward compatibility: apply effect only for action 1 (legacy binary case)
+    if int(action) == 1:
+      bern_linear_comp += effect_func_bern(state)
+  
   bern_p = 1 - sigmoid(bern_linear_comp)
   # bernoulli component
   rv = bernoulli.rvs(bern_p)
   if (rv):
       y_mu = state @ y_params
-      if (action == 1):
-          y_mu += effect_func_y(state)
+      try:
+          # Try action-aware effect function first (new multi-category approach)
+          y_mu += effect_func_y(state, action)
+      except TypeError:
+          # Backward compatibility: apply effect only for action 1 (legacy binary case)
+          if int(action) == 1:
+              y_mu += effect_func_y(state)
       # poisson component
       l = np.exp(y_mu)
       sample = poisson.rvs(l)
@@ -124,8 +136,8 @@ class UserEnvironment():
         self.reward_generating_func = lambda state, action: construct_model_and_sample(state, action, \
                                           self.user_params[0], \
                                           self.user_params[1], \
-                                          effect_func_bern=lambda state: self.user_effect_func_bern(state, self.user_effect_sizes[0]), \
-                                          effect_func_y=lambda state: self.user_effect_func_y(state, self.user_effect_sizes[1]))
+                                          effect_func_bern=lambda state, action: self.user_effect_func_bern(state, action, self.user_effect_sizes[0]), \
+                                          effect_func_y=lambda state, action: self.user_effect_func_y(state, action, self.user_effect_sizes[1]))
         # user environment history
         self.user_history = {"actions":[], "outcomes":[]}
 

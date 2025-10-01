@@ -12,7 +12,8 @@ import experiment_global_vars
 # on your machine, or to run a sequence of jobs one after another
 # in an interactive shell on odyssey.
 DRYRUN = True
-JOB_TYPE = "simulations" #simulations #compute_metrics
+# JOB_TYPE = "simulations" #simulations #compute_metrics
+JOB_TYPE = "compute_metrics"
 # In this package, there are two types of simulations:
 # (1) Evaluation: re-evaluate algorithm design decisions of the Oralytics RL algorithm
 # (2) Did We Learn? assess if the algorithm learned: namely there's evidence that the RL algorithm 
@@ -29,9 +30,11 @@ OUTPUT_DIR = read_write_info.WRITE_PATH_PREFIX
 # be grid-searched over.
 # Note that the second parameter must be a dictionary in which each
 # value is a list of options.
-CLUSTER_SIZES = ["full_pooling"]
+CLUSTER_SIZES = ["no_pooling"]
 OFFLINE_OR_ONLINE = ["online"]
 SEEDS = range(experiment_global_vars.MAX_SEED_VAL)
+# Algorithm names for budget constraint experiments
+ALGORITHMS = ["UCB_NoNudge", "UCB_UniformNudge", "UCB_NoReveal", "DABBI_Nudging_I", "DABBI_Nudging_II"]
 # Notice: if you do not specify state / state=None then you are running "evaluation" simulations
 # otherwise, you are running "did we learn?"" simulations
 # order is time of day, b_bar, a_bar, app_engage
@@ -44,33 +47,35 @@ dimensions = [dimension1, dimension2, dimension3, dimension4]
 STATES = list(itertools.product(*dimensions))
 
 ### RUNNING EVALUATIONS ###
+QUEUE = [
+    ('eval_pooling', dict(
+                       cluster_size=CLUSTER_SIZES,
+                       offline_or_online=["online"],
+                       state=[None]
+                    #    ,
+                    #    seed=SEEDS
+                       )
+    )
+    # ,
+    # ('eval_online', dict(
+    #                 cluster_size=["full_pooling"],
+    #                 offline_or_online=OFFLINE_OR_ONLINE,
+    #                 state=[None],
+    #                 seed=SEEDS
+    #                 )
+    # )
+    ]
+
+### RUNNING DID WE LEARN? ###
 # QUEUE = [
-#     ('eval_pooling', dict(
-#                        cluster_size=CLUSTER_SIZES,
-#                        offline_or_online=["online"],
-#                        state=[None],
-#                        seed=SEEDS
-#                        )
-#     ),
-#     ('eval_online', dict(
+#     ('did_we_learn', dict(
 #                     cluster_size=["full_pooling"],
-#                     offline_or_online=OFFLINE_OR_ONLINE,
-#                     state=[None],
+#                     offline_or_online=["online"],
+#                     state=STATES,
 #                     seed=SEEDS
 #                     )
 #     )
 #     ]
-
-### RUNNING DID WE LEARN? ###
-QUEUE = [
-    ('did_we_learn', dict(
-                    cluster_size=["full_pooling"],
-                    offline_or_online=["online"],
-                    state=STATES,
-                    seed=SEEDS
-                    )
-    )
-    ]
 
 def run(exp_dir, exp_name, exp_kwargs):
     '''
