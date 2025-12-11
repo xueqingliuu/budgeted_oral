@@ -2,8 +2,8 @@
 GLOBAL VALUES
 """
 
-MAX_SEED_VAL = 200
-NUM_TRIALS = 70
+MAX_SEED_VAL = 100
+NUM_TRIALS = 72
 TRIAL_LENGTH_IN_WEEKS = 10
 # We should have NUM_USERS x NUM_DECISION_TIMES datapoints for each saved value or
 # statistic at the end of the study
@@ -15,5 +15,5 @@ V4:
 * recruitment rate is based off of the exact start date from the MRT
 * app engagement in algorithm state
 """
-FILL_IN_COLS = ['trial_day_in_study', 'policy_idx', 'action', 'O', 'OP', 'reward', 'quality', 'mu_hat', 'gamma_hat', 'decision_time', 'delta', 'distance', 'q0', 'q1'] + ['state.tod', 'state.b.bar',\
- 'state.a.bar', 'state.app.engage', 'state.bias']
+FILL_IN_COLS = ['trial_day_in_study', 'policy_idx', 'action', 'O', 'OP', 'regret', 'quality', 'mu_hat', 'gamma_hat', 'decision_time', 'delta', 'distance', 'q0', 'q1'] + ['state.tod', 'state.b.bar',\
+ 'state.a.bar', 'state.app.engage', 'state.day.type', 'state.bias'] #, 'state.day.in.study']

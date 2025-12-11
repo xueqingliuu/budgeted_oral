@@ -86,6 +86,7 @@ def build_outcomes_df_for_algorithm(folder_name, max_seed_val, algorithm_name):
             last_open = np.where(Y == 1, t, np.nan)
             lt = pd.Series(last_open).ffill().fillna(0).to_numpy()
             tau = t - lt
+            regret = user_rows["regret"].to_numpy(dtype=float)
 
             dq = O * (mu_hat - gamma_hat)
             rg = O * (quality - gamma_hat)
@@ -94,6 +95,7 @@ def build_outcomes_df_for_algorithm(folder_name, max_seed_val, algorithm_name):
                 "seed": seed,
                 "user_idx": user_idx,
                 "user_decision_t": t,
+                "regret": regret,
                 "tau": tau,
                 "Y": Y,
                 "O": O,
@@ -327,10 +329,10 @@ def action_disagreement_by_seed_user(df, distance_bins=None):
         distance_bins = [0.33, 0.67]  # Creates 3 bins: Q1, Q2, Q3
     
     # Add distance bins using quantile-based binning
+    # duplicates="drop" may result in fewer than 3 bins, so let pandas auto-label
     disagreement_df["distance_bin"] = pd.qcut(
         disagreement_df["distance"], 
-        q=4,  # 4 quantiles = 3 bins
-        labels=["Q1", "Q2", "Q3"],
+        q=4,  # 4 quantiles = 3 bins (or fewer if duplicates)
         duplicates="drop"
     )
     
@@ -611,3 +613,30 @@ def analyze_user_heterogeneity(folder_name, max_seed_val):
         "user_metrics": user_df,
         "classification": classification_results
     }
+
+def regret_trajectories(df):
+    """
+    Compute regret trajectories as 3D tensor (num_seeds, NUM_TRIAL_USERS, NUM_DECISION_TIMES).
+    
+    Args:
+        df: DataFrame with columns: seed, user_idx, user_decision_t, regret
+        
+    Returns:
+        3D numpy array with regret values over time for each user in each seed
+    """
+    seeds = sorted(df["seed"].unique())
+    total = np.zeros((len(seeds), NUM_TRIAL_USERS, NUM_DECISION_TIMES))
+    
+    for seed_idx, seed in enumerate(seeds):
+        seed_df = df[df["seed"] == seed]
+        users = seed_df["user_idx"].unique()
+        for user_idx, user in enumerate(users):
+            user_rows = (
+                seed_df[seed_df["user_idx"] == user]
+                .sort_values("user_decision_t")
+                .reset_index(drop=True)
+            )
+            regrets = user_rows["regret"].to_numpy()
+            total[seed_idx, user_idx, :regrets.size] = regrets
+    
+    return total

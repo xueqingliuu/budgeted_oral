@@ -26,10 +26,11 @@ def get_b_bar_a_bar(user_qualities, user_actions):
 
     return b_bar, a_bar
 
-# b bar is designed to be in [0, 180]
-# we want normalized b_bar to be close to [-1, 1]
+# b bar is designed to be in [0, 180] (we log transform, so not strictly true)
+# we want normalized b_bar to be close to [-1, 1  ]
+# normalize log transformed b_bar to be close to [-1, 1]
 def normalize_b_bar(b_bar):
-  return (b_bar - (181 / 2)) / (179 / 2)
+  return (np.exp(b_bar) - (181 / 2)) / (179 / 2)
 
 # we need a_bar to be between -1 and 1 because for behavioral scientists to interpret
 # the intercept term, all state features need to have meaning at value 0.

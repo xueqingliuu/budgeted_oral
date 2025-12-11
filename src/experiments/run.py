@@ -47,6 +47,15 @@ dimensions = [dimension1, dimension2, dimension3, dimension4]
 STATES = list(itertools.product(*dimensions))
 
 ### RUNNING EVALUATIONS ###
+# QUEUE = [
+#     ('eval_pooling', dict(
+#                        cluster_size=CLUSTER_SIZES,
+#                        offline_or_online=["online"],
+#                        state=[None],
+#                        seed=SEEDS
+#                        )
+#     )
+#     ]
 QUEUE = [
     ('eval_pooling', dict(
                        cluster_size=CLUSTER_SIZES,
@@ -56,14 +65,6 @@ QUEUE = [
                     #    seed=SEEDS
                        )
     )
-    # ,
-    # ('eval_online', dict(
-    #                 cluster_size=["full_pooling"],
-    #                 offline_or_online=OFFLINE_OR_ONLINE,
-    #                 state=[None],
-    #                 seed=SEEDS
-    #                 )
-    # )
     ]
 
 ### RUNNING DID WE LEARN? ###
