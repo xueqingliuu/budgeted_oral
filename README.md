@@ -16,30 +16,13 @@ The scripts described below are used to fit and evaluate this modified simulatio
 
 
 # oralytics-post-deployment-analysis
-This repository contains code from the [Oralytics Deployment Paper](https://arxiv.org/abs/2409.02069) for performing re-sampling analyses to re-evaluate algorithm decisions made for the RL algorithm deployed in the MRT (phase 1) of the Oralytics trial.
+This repository contains code from the [Anonymous Paper] for performing re-sampling analyses to re-evaluate algorithm decisions made for the RL algorithm deployed in the MRT (phase 1) of the Oralytics trial.
 
-## Citing Our Code
-If you use our code in any way, please cite us:
-```
-@misc{trella2024deployedonlinereinforcementlearning,
-      title={A Deployed Online Reinforcement Learning Algorithm In An Oral Health Clinical Trial}, 
-      author={Anna L. Trella and Kelly W. Zhang and Hinal Jajal and Inbal Nahum-Shani and Vivek Shetty and Finale Doshi-Velez and Susan A. Murphy},
-      year={2024},
-      eprint={2409.02069},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2409.02069}, 
-}
-```
 
 ## Fitting Simulation Environment
 * Running `python3 src/dev_scripts/fitting_user_models.py` will fit each Oralytics participant to a non-stationary base model class (zero-inflated poisson model) and save parameters to `v4_non_stat_zip_model_params.csv`.
 * Running `python3 src/dev_scripts/app_opening_prob_calculation.py.py` will fit an app opening probability for each Oralytics participant and save the probabilities to `v4_app_open_prob.csv`.
 * Running `python3 src/dev_scripts/get_participant_start_end_dates.py` will get the start and end dates (i.e., when the participant started and completed the trial) of each Oralytics participant and save the info. to `v4_start_end_dates.csv`.
-
-## Evaluating Simulation Environment
-* Running `python3 src/dev_scripts/eval_sim_env.py` calculates various metrics comparing the data generating by the fitted simulation environment with data from the Oralytics trial.
-
 
 To run experiments:
 
