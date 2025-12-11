@@ -1,3 +1,20 @@
+# Simulation Environment
+
+We build on the Oralytics simulation environment from Trella et al. and modify it in three key ways:
+
+a. App-opening mechanism (information-revealing action).
+We incorporate an app-opening feature, which is a key model component. The recommender agent can only access and update its belief state using the most recent historical information if and only if the user takes the information-revealing action of opening the app at that time step.
+
+b. Differential app-opening probabilities.
+A user’s probability of opening the app is allowed to vary depending on whether or not they received a nudge from the clinicians. Thus, app engagement is modeled as a behavior that may be influenced by clinician nudges.
+
+c. Multi-category action space.
+We consider a more challenging intervention setting with a multi-category action space instead of the common binary decision space in mHealth. Specifically, there are five possible actions: a no-message action and four distinct message types.
+
+The scripts described below are used to fit and evaluate this modified simulation environment to the Oralytics trial data. Under `\synthetic`, we provide code and results of our synthetic experiments.
+
+
+
 # oralytics-post-deployment-analysis
 This repository contains code from the [Oralytics Deployment Paper](https://arxiv.org/abs/2409.02069) for performing re-sampling analyses to re-evaluate algorithm decisions made for the RL algorithm deployed in the MRT (phase 1) of the Oralytics trial.
 
