@@ -40,8 +40,6 @@ If you use our code in any way, please cite us:
 ## Evaluating Simulation Environment
 * Running `python3 src/dev_scripts/eval_sim_env.py` calculates various metrics comparing the data generating by the fitted simulation environment with data from the Oralytics trial.
 
-## Running Re-Sampling Based Experiments
-Experiments can be run sequentially one at a time or in parallel. In this paper, we ran two types of experiments (1) re-evaluate design decisions made for the Oralytics algorithm and (2) investigate what the algorithm learned (did we learn?)
 
 To run experiments:
 
