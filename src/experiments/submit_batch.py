@@ -10,8 +10,8 @@ import run
 
 
 TMP_DIR = 'tmp'
-TEMPLATE = 'template.sh'
-
+# TEMPLATE = 'template.sh'
+TEMPLATE = os.path.join(os.path.dirname(__file__), "template.sh")
 
 def safe_zip(*args):
     if len(args) > 0:

@@ -1,30 +1,28 @@
-# oralytics-post-deployment-analysis
-This repository contains code from the [Oralytics Deployment Paper](https://arxiv.org/abs/2409.02069) for performing re-sampling analyses to re-evaluate algorithm decisions made for the RL algorithm deployed in the MRT (phase 1) of the Oralytics trial.
+# Simulation Environment
 
-## Citing Our Code
-If you use our code in any way, please cite us:
-```
-@misc{trella2024deployedonlinereinforcementlearning,
-      title={A Deployed Online Reinforcement Learning Algorithm In An Oral Health Clinical Trial}, 
-      author={Anna L. Trella and Kelly W. Zhang and Hinal Jajal and Inbal Nahum-Shani and Vivek Shetty and Finale Doshi-Velez and Susan A. Murphy},
-      year={2024},
-      eprint={2409.02069},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2409.02069}, 
-}
-```
+We build on the Oralytics simulation environment from Trella et al. and modify it in three key ways:
+
+a. App-opening mechanism (information-revealing action).
+We incorporate an app-opening feature, which is a key model component. The recommender agent can only access and update its belief state using the most recent historical information if and only if the user takes the information-revealing action of opening the app at that time step.
+
+b. Differential app-opening probabilities.
+A user’s probability of opening the app is allowed to vary depending on whether or not they received a nudge from the clinicians. Thus, app engagement is modeled as a behavior that may be influenced by clinician nudges.
+
+c. Multi-category action space.
+We consider a more challenging intervention setting with a multi-category action space instead of the common binary decision space in mHealth. Specifically, there are five possible actions: a no-message action and four distinct message types.
+
+The scripts described below are used to fit and evaluate this modified simulation environment to the Oralytics trial data. Under `\synthetic`, we provide code and results of our synthetic experiments.
+
+
+
+# oralytics-post-deployment-analysis
+This repository contains code from the [Anonymous Paper] for performing re-sampling analyses to re-evaluate algorithm decisions made for the RL algorithm deployed in the MRT (phase 1) of the Oralytics trial.
+
 
 ## Fitting Simulation Environment
 * Running `python3 src/dev_scripts/fitting_user_models.py` will fit each Oralytics participant to a non-stationary base model class (zero-inflated poisson model) and save parameters to `v4_non_stat_zip_model_params.csv`.
 * Running `python3 src/dev_scripts/app_opening_prob_calculation.py.py` will fit an app opening probability for each Oralytics participant and save the probabilities to `v4_app_open_prob.csv`.
 * Running `python3 src/dev_scripts/get_participant_start_end_dates.py` will get the start and end dates (i.e., when the participant started and completed the trial) of each Oralytics participant and save the info. to `v4_start_end_dates.csv`.
-
-## Evaluating Simulation Environment
-* Running `python3 src/dev_scripts/eval_sim_env.py` calculates various metrics comparing the data generating by the fitted simulation environment with data from the Oralytics trial.
-
-## Running Re-Sampling Based Experiments
-Experiments can be run sequentially one at a time or in parallel. In this paper, we ran two types of experiments (1) re-evaluate design decisions made for the Oralytics algorithm and (2) investigate what the algorithm learned (did we learn?)
 
 To run experiments:
 

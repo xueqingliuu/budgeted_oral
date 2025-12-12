@@ -1,6 +1,12 @@
 import pandas as pd
+import os
 
-MRT_DATA = pd.read_csv('../../data/oralytics_mrt_data.csv')
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Build paths relative to the script location
+mrt_data_path = os.path.join(script_dir, '../../../OralyticsMRT/oralytics_mrt_data.csv')
+MRT_DATA = pd.read_csv(mrt_data_path)
 MRT_USERS = MRT_DATA['user_id'].unique()
 
 ### HELPERS ###
@@ -15,5 +21,6 @@ for user_id in MRT_USERS:
     user_end_dates.append(user_df['user_end_day'].unique()[0])
     
 # saving values to a csv
+output_path = os.path.join(script_dir, '../../sim_env_data/v4_start_end_dates.csv')
 start_end_date_df = pd.DataFrame({'user_id': MRT_USERS, 'user_start_day': user_start_dates, 'user_end_day': user_end_dates})
-start_end_date_df.to_csv('../../sim_env_data/v4_start_end_dates.csv')
+start_end_date_df.to_csv(output_path)

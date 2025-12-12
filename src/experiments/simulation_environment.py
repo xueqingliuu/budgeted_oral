@@ -20,8 +20,8 @@ class SimulationEnvironment():
     def generate_current_state(self):
         return None
 
-    def generate_outcomes(self, user_idx, state, action):
-        return self.all_user_envs[user_idx].generate_outcome(state, action)
+    def generate_outcomes(self, user_idx, advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, O, q0, q1):
+        return self.all_user_envs[user_idx].generate_outcome(advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, O, q0, q1)
 
     def get_states_for_user(self, user_idx):
         return self.all_user_envs[user_idx].get_states()
@@ -71,46 +71,65 @@ class SimulationEnvironmentAppEngagement(SimulationEnvironment):
 
 
 # ### NORMALIZTIONS ###
-def normalize_total_brush_quality(quality):
-  return (quality - 154) / 163
+# def normalize_total_brush_quality(quality):
+#     return (quality - 154) / 163
+    # return (quality - np.mean(quality)) / np.std(quality)
 
 def normalize_day_in_study(day):
-  return (day - 35.5) / 34.5
+    return (day - 35.5) / 34.5
 
 def sigmoid(x):
-  return 1 / (1 + np.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 """### Functions for Environment Models
 ---
 """
-def construct_model_and_sample(state, action, \
-                                          bern_params, \
-                                          y_params, \
-                                          effect_func_bern=lambda state : 0, \
-                                          effect_func_y=lambda state : 0):
-#   print(bern_params)
-  bern_linear_comp = state @ bern_params
-  if (action == 1):
-    bern_linear_comp += effect_func_bern(state)
-  bern_p = 1 - sigmoid(bern_linear_comp)
-  # bernoulli component
-  rv = bernoulli.rvs(bern_p)
-  if (rv):
-      y_mu = state @ y_params
-      if (action == 1):
-          y_mu += effect_func_y(state)
-      # poisson component
-      l = np.exp(y_mu)
-      sample = poisson.rvs(l)
 
-      return sample
+def construct_model_and_sample(advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, o, \
+                                q0, q1, \
+                                      bern_params, \
+                                    #   y_params, \
+                                      effect_func_bern=lambda state, action: 0
+                                      ):
+    a_bar = np.sum(prob_a_bar * a_bar_discrete_values)
+    b_bar = np.sum(prob_b_bar * b_bar_discrete_values)
+    new_advantage_state = np.array([advantage_state[0], b_bar, a_bar, advantage_state[3], advantage_state[4], advantage_state[5]]) #, advantage_state[6]])
 
-  else:
-    return 0
+    # if open == 1:
+    #     state_use = advantage_state
+    # else:
+    #     state_use = new_advantage_state
+    
+    # print(f"advantage_state: {np.array(advantage_state)}")
+    # print(f"new_advantage_state: {np.array(new_advantage_state)}")
+
+    mu_hat = bern_params @ advantage_state
+    gamma_hat = bern_params @ new_advantage_state
+        
+    if action != 0:
+        mu_hat += effect_func_bern(advantage_state, action)
+        gamma_hat += effect_func_bern(new_advantage_state, action)
+
+    h = o * q1 + (1 - o) * q0
+    expected_reward = h * mu_hat + (1 - h) * gamma_hat
+    # if open == 1:
+    #     expected_reward = mu_hat
+    # else:
+    #     expected_reward = gamma_hat
+
+    expected_reward_no_reveal = gamma_hat
+
+    # bern_linear_comp_sample = bern_params @ advantage_state
+    # if action != 0:
+        # bern_linear_comp_sample += effect_func_bern(advantage_state, action)
+    sample = norm.rvs(loc=expected_reward, scale=1)
+    return expected_reward, expected_reward_no_reveal, sample
+
 
 class UserEnvironment():
     def __init__(self, user_id, model_type, user_sessions, user_effect_sizes, \
-                user_params, user_effect_func_bern, user_effect_func_y):
+                user_params, 
+                user_effect_func_bern):
         self.user_id = user_id
         self.model_type = model_type
         # vector: size (T, D) where D is the dimension of the env. state
@@ -120,12 +139,11 @@ class UserEnvironment():
         # reward generating function
         self.user_params = user_params
         self.user_effect_func_bern = user_effect_func_bern
-        self.user_effect_func_y = user_effect_func_y
-        self.reward_generating_func = lambda state, action: construct_model_and_sample(state, action, \
-                                          self.user_params[0], \
-                                          self.user_params[1], \
-                                          effect_func_bern=lambda state: self.user_effect_func_bern(state, self.user_effect_sizes[0]), \
-                                          effect_func_y=lambda state: self.user_effect_func_y(state, self.user_effect_sizes[1]))
+
+        self.reward_generating_func = lambda advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, O, q0, q1: construct_model_and_sample(advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, O, q0, q1, \
+                                      self.user_params, \
+                                    #   self.user_params[1], \
+                                      effect_func_bern=lambda state, action: self.user_effect_func_bern(state, action, self.user_effect_sizes))
         # user environment history
         self.user_history = {"actions":[], "outcomes":[]}
 
@@ -135,13 +153,13 @@ class UserEnvironment():
     def set_user_history(self, property, value):
         self.user_history[property].append(value)
 
-    def generate_outcome(self, state, action):
+    def generate_outcome(self, advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, O, q0, q1):
         # save action and outcome
         self.set_user_history("actions", action)
-        outcome = min(self.reward_generating_func(state, action), 180)
+        expected_reward, expected_reward_no_reveal, outcome = self.reward_generating_func(advantage_state, prob_a_bar, prob_b_bar, a_bar_discrete_values, b_bar_discrete_values, action, O, q0, q1)
         self.set_user_history("outcomes", outcome)
 
-        return outcome
+        return expected_reward, expected_reward_no_reveal, outcome
 
     def get_states(self):
         return self.user_states
@@ -151,9 +169,11 @@ class UserEnvironment():
 
 class UserEnvironmentAppEngagement(UserEnvironment):
     def __init__(self, user_id, model_type, user_effect_sizes, \
-                user_params, user_effect_func_bern, user_effect_func_y):
+                user_params,   
+                user_effect_func_bern):
         super(UserEnvironmentAppEngagement, self).__init__(user_id, model_type, None, user_effect_sizes, \
-                  user_params, user_effect_func_bern, user_effect_func_y)
+                  user_params, 
+                  user_effect_func_bern)
         # probability of opening app, needs to be implemented by children
         self.app_open_base_prob = None
         # tracking prior day app engagement

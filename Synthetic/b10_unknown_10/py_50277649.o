@@ -1,0 +1,7 @@
+Usage: file [-bcCdEhikLlNnprsvzZ0] [--apple] [--extension] [--mime-encoding]
+            [--mime-type] [-e <testname>] [-F <separator>]  [-f <namefile>]
+            [-m <magicfiles>] [-P <parameter=value>] <file> ...
+       file -C [-m <magicfiles>]
+       file [--help]
+This is the b10unknown10 script
+[2025-12-10T14:10:50.894] error: *** JOB 50277649 ON holy8a26601 CANCELLED AT 2025-12-10T14:10:50 DUE to SIGNAL Terminated ***

@@ -90,7 +90,7 @@ class OralyticsMRTAlg(RLAlgorithm):
     def __init__(self, offline_or_online):
         self.is_online = True if offline_or_online == "online" else False
         cost_params = [100, 100]
-        update_cadence = 14 # denotes weekly updates, this value is only used by no-pooling algorithms
+        update_cadence = 2  #14 # denotes weekly updates, this value is only used by no-pooling algorithms
         smoothing_func = smoothing_function.stable_generalized_logistic
         super(OralyticsMRTAlg, self).__init__(cost_params, update_cadence, smoothing_func)
 
